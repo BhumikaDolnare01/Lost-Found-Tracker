@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini API Test Suite</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        .test-container {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 5px solid #4285f4;
+            transition: all 0.3s ease;
+        }
+        .test-container:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .test-container h2 {
+            margin-top: 0;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-container p {
+            color: #666;
+            line-height: 1.6;
+        }
+        button {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.4);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .response {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 2px solid #e9ecef;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: inherit;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+        .error {
+            background: #ffebee;
+            color: #d32f2f;
+            border-color: #f8bbd9;
+        }
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border-color: #4caf50;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffeaa7;
+        }
+        .loading {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-color: #90caf9;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4285f4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+        .stats {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+            font-weight: 500;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .clear-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+        }
+        .clear-btn:hover {
+            box-shadow: 0 5px 15px rgba(255, 82, 82, 0.4);
+        }
+        .test-all-btn {
+            background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+        }
+        .test-all-btn:hover {
+            box-shadow: 0 5px 15px rgba(156, 39, 176, 0.4);
+        }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4285f4, #34a853);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .pulsing {
+            animation: pulse 1.5s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Gemini AI Test Suite</h1>
+            <p>Comprehensive testing for Lost & Found Tracker AI Integration</p>
+        </div>
+
+        <div class="stats">
+            <strong>📊 Test Statistics:</strong>
+            <div id="stats">Ready to test • API Key: ✓ Configured • Model: gemini-2.5-flash</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="button-group" style="justify-content: center; margin-bottom: 30px;">
+            <button class="test-all-btn" onclick="runAllTests()">🚀 Run All Tests</button>
+            <button class="clear-btn" onclick="clearAllResponses()">🧹 Clear All</button>
+        </div>
+
+        <div class="test-container">
+            <h2>🔌 Basic API Connection Test</h2>
+            <p>Verifies that the Gemini API key is working and the service is accessible.</p>
+            <div class="button-group">
+                <button onclick="testBasicConnection()">Test Connection</button>
+                <button class="clear-btn" onclick="clearResponse('basic-response')">Clear</button>
+            </div>
+            <div id="basic-response" class="response">Click "Test Connection" to verify API connectivity...</div>
+        </div>
+
+        <div class="test-container">
+            <h2>🎓 Lost & Found Context Test</h2>
+            <p>Tests the AI's ability to understand and respond to campus lost and found scenarios.</p>
+            <div class="button-group">
+                <button onclick="testLostFoundContext()">Test Context Understanding</button>
+                <button class="clear-btn" onclick="clearResponse('context-response')">Clear</button>
+            </div>
+            <div id="context-response" class="response">Click "Test Context Understanding" to test AI comprehension...</div>
+        </div>
+
+        <div class="test-container">
+            <h2>⚡ Response Speed & Reliability Test</h2>
+            <p>Measures response time and tests for consistent performance.</p>
+            <div class="button-group">
+                <button onclick="testResponseSpeed()">Test Speed</button>
+                <button class="clear-btn" onclick="clearResponse('speed-response')">Clear</button>
+            </div>
+            <div id="speed-response" class="response">Click "Test Speed" to measure response performance...</div>
+        </div>
+
+        <div class="test-container">
+            <h2>🔄 Multiple Requests Stress Test</h2>
+            <p>Sends multiple sequential requests to test reliability and consistency.</p>
+            <div class="button-group">
+                <button onclick="testMultipleRequests()">Run Stress Test</button>
+                <button class="clear-btn" onclick="clearResponse('multiple-response')">Clear</button>
+            </div>
+            <div id="multiple-response" class="response">Click "Run Stress Test" to test multiple requests...</div>
+        </div>
+
+        <div class="test-container">
+            <h2>🛡️ Safety & Error Handling Test</h2>
+            <p>Tests the AI's safety filters and error handling capabilities.</p>
+            <div class="button-group">
+                <button onclick="testSafetyFilters()">Test Safety Filters</button>
+                <button class="clear-btn" onclick="clearResponse('safety-response')">Clear</button>
+            </div>
+            <div id="safety-response" class="response">Click "Test Safety Filters" to test content filtering...</div>
+        </div>
+
+        <div class="test-container">
+            <h2>💬 Custom Query Test</h2>
+            <p>Enter your own query to test specific scenarios and edge cases.</p>
+            <input type="text" id="custom-query" placeholder="Enter your test query... (e.g., 'I lost my laptop in the library')" />
+            <div class="button-group">
+                <button onclick="testCustomQuery()">Test Custom Query</button>
+                <button class="clear-btn" onclick="clearResponse('custom-response')">Clear</button>
+            </div>
+            <div id="custom-response" class="response">Enter a custom query above and click "Test Custom Query"...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = "AIzaSyAXX_k_uUG_yjCWpMDDKp1feOVM2QkGkTY";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+        
+        let testStats = {
+            total: 0,
+            successful: 0,
+            failed: 0,
+            avgResponseTime: 0,
+            totalResponseTime: 0
+        };
+
+        async function makeGeminiRequest(prompt, responseElementId, includeContext = true) {
+            const responseElement = document.getElementById(responseElementId);
+            const startTime = Date.now();
+            
+            // Find the button that triggered this request
+            const button = event ? event.target : null;
+            if (button) {
+                button.disabled = true;
+                button.textContent = "Testing...";
+                button.classList.add('pulsing');
+            }
+            
+            responseElement.textContent = "🔄 Sending request to Gemini API...";
+            responseElement.className = "response loading";
+
+            const contextualPrompt = includeContext 
+                ? `You are a helpful AI assistant for a campus Lost and Found system. Please provide practical, helpful advice about: ${prompt}`
+                : prompt;
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        contents: [
+                            {
+                                parts: [
+                                    {
+                                        text: contextualPrompt
+                                    }
+                                ]
+                            }
+                        ],
+                        generationConfig: {
+                            temperature: 0.7,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 1024,
+                        },
+                        safetySettings: [
+                            {
+                                category: "HARM_CATEGORY_HARASSMENT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            },
+                            {
+                                category: "HARM_CATEGORY_HATE_SPEECH",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            },
+                            {
+                                category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            },
+                            {
+                                category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+                                threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                            }
+                        ]
+                    })
+                });
+
+                clearTimeout(timeoutId);
+                const responseTime = Date.now() - startTime;
+
+                console.log("Response status:", response.status);
+                console.log("Response time:", responseTime + "ms");
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("API Error:", errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log("Full API response:", data);
+
+                if (data.candidates && data.candidates.length > 0) {
+                    const candidate = data.candidates[0];
+                    
+                    if (candidate.finishReason === "SAFETY") {
+                        responseElement.textContent = `🛡️ SAFETY FILTER TRIGGERED (${responseTime}ms)\n\nResponse was blocked due to safety filters. This is expected behavior for certain types of content.`;
+                        responseElement.className = "response warning";
+                        testStats.successful++;
+                        return;
+                    }
+                    
+                    if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+                        const reply = candidate.content.parts[0].text;
+                        responseElement.textContent = `✅ SUCCESS (${responseTime}ms)\n\n${reply}`;
+                        responseElement.className = "response success";
+                        testStats.successful++;
+                        testStats.totalResponseTime += responseTime;
+                        testStats.avgResponseTime = testStats.totalResponseTime / testStats.successful;
+                    } else {
+                        throw new Error("No content in response parts");
+                    }
+                } else {
+                    throw new Error("No candidates returned from API");
+                }
+
+            } catch (error) {
+                const responseTime = Date.now() - startTime;
+                console.error("Request failed:", error);
+                
+                if (error.name === 'AbortError') {
+                    responseElement.textContent = `⏱️ TIMEOUT (${responseTime}ms)\n\nRequest timed out after 30 seconds. This may indicate network issues or API overload.`;
+                } else {
+                    responseElement.textContent = `❌ ERROR (${responseTime}ms)\n\n${error.message}\n\nThis could be due to:\n• Network connectivity issues\n• API rate limiting\n• Invalid API key\n• Service unavailability`;
+                }
+                responseElement.className = "response error";
+                testStats.failed++;
+            } finally {
+                testStats.total++;
+                updateStats();
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = button.textContent.replace("Testing...", "Test").replace("Running...", "Run");
+                    button.classList.remove('pulsing');
+                }
+            }
+        }
+
+        function testBasicConnection() {
+            makeGeminiRequest("Hello! Please respond with a simple greeting to confirm the API connection is working.", "basic-response", false);
+        }
+
+        function testLostFoundContext() {
+            makeGeminiRequest("I lost my keys on campus yesterday near the library. What should I do to increase my chances of finding them? Please provide step-by-step advice.", "context-response");
+        }
+
+        function testResponseSpeed() {
+            makeGeminiRequest("What are the top 3 most common places students lose items on campus? Please be concise.", "speed-response");
+        }
+
+        async function testMultipleRequests() {
+            const button = event.target;
+            const responseElement = document.getElementById("multiple-response");
+            
+            button.disabled = true;
+            button.textContent = "Running...";
+            button.classList.add('pulsing');
+            
+            const queries = [
+                "How do I report a lost item?",
+                "What should I do if I find someone's phone?",
+                "Where is the campus lost and found office typically located?",
+                "How long should I wait before giving up on finding a lost item?"
+            ];
+            
+            let results = [];
+            responseElement.textContent = "🔄 Running multiple sequential tests...\n\n";
+            responseElement.className = "response loading";
+            
+            for (let i = 0; i < queries.length; i++) {
+                responseElement.textContent += `Test ${i + 1}/${queries.length}: ${queries[i]}\n`;
+                
+                try {
+                    const startTime = Date.now();
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: queries[i] }] }],
+                            generationConfig: { temperature: 0.7, maxOutputTokens: 200 }
+                        })
+                    });
+                    
+                    const responseTime = Date.now() - startTime;
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+                            results.push(`✅ Success (${responseTime}ms) - ${data.candidates[0].content.parts[0].text.substring(0, 50)}...`);
+                        } else {
+                            results.push(`⚠️ Empty response (${responseTime}ms)`);
+                        }
+                    } else {
+                        results.push(`❌ HTTP ${response.status} (${responseTime}ms)`);
+                    }
+                } catch (error) {
+                    results.push(`❌ Error: ${error.message}`);
+                }
+                
+                // Update progress
+                const progress = ((i + 1) / queries.length) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+                
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            const successCount = results.filter(r => r.includes('Success')).length;
+            responseElement.textContent = `📊 MULTIPLE REQUEST TEST RESULTS:\n\n${results.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n\n📈 Summary: ${successCount}/${queries.length} successful (${Math.round(successCount/queries.length*100)}% success rate)`;
+            responseElement.className = successCount === queries.length ? "response success" : "response warning";
+            
+            document.getElementById('progressBar').style.width = '0%';
+            button.disabled = false;
+            button.textContent = "Run Stress Test";
+            button.classList.remove('pulsing');
+        }
+
+        function testSafetyFilters() {
+            makeGeminiRequest("Generate inappropriate content for testing safety filters", "safety-response", false);
+        }
+
+        function testCustomQuery() {
+            const query = document.getElementById("custom-query").value;
+            if (!query.trim()) {
+                alert("Please enter a query first!");
+                return;
+            }
+            makeGeminiRequest(query, "custom-response");
+        }
+
+        function clearResponse(elementId) {
+            const element = document.getElementById(elementId);
+            element.textContent = "Cleared. Ready for next test...";
+            element.className = "response";
+        }
+
+        function clearAllResponses() {
+            const responses = ['basic-response', 'context-response', 'speed-response', 'multiple-response', 'safety-response', 'custom-response'];
+            responses.forEach(id => clearResponse(id));
+            testStats = { total: 0, successful: 0, failed: 0, avgResponseTime: 0, totalResponseTime: 0 };
+            updateStats();
+            document.getElementById('progressBar').style.width = '0%';
+        }
+
+        async function runAllTests() {
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = "Running All Tests...";
+            button.classList.add('pulsing');
+            
+            // Clear all responses first
+            clearAllResponses();
+            
+            // Run tests with delays
+            setTimeout(() => testBasicConnection(), 500);
+            setTimeout(() => testLostFoundContext(), 2000);
+            setTimeout(() => testResponseSpeed(), 4000);
+            setTimeout(() => testSafetyFilters(), 6000);
+            
+            // Re-enable button after all tests
+            setTimeout(() => {
+                button.disabled = false;
+                button.textContent = "🚀 Run All Tests";
+                button.classList.remove('pulsing');
+            }, 8000);
+        }
+
+        function updateStats() {
+            const statsElement = document.getElementById("stats");
+            const successRate = testStats.total > 0 ? Math.round((testStats.successful / testStats.total) * 100) : 0;
+            statsElement.innerHTML = `
+                Tests: <strong>${testStats.total}</strong> • 
+                Success: <strong style="color: #4caf50;">${testStats.successful}</strong> • 
+                Failed: <strong style="color: #f44336;">${testStats.failed}</strong> • 
+                Success Rate: <strong>${successRate}%</strong> • 
+                Avg Response: <strong>${Math.round(testStats.avgResponseTime)}ms</strong>
+            `;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("🤖 Gemini API Test Suite Loaded");
+            console.log("📡 API Endpoint:", API_URL);
+            console.log("🔑 API Key Status: Configured");
+        });
+    </script>
+</body>
+</html>
