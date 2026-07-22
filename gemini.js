@@ -2,8 +2,8 @@
 let lastQuery = "";
 let retryCount = 0;
 const MAX_RETRIES = 3;
-const API_KEY = "AIzaSyAXX_k_uUG_yjCWpMDDKp1feOVM2QkGkTY";
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+const API_KEY = "Add you ownkey here";
+const API_URL = `${API_KEY}`;
 
 async function askGemini(isRetry = false) {
   const prompt = document.getElementById("geminiPrompt").value;
