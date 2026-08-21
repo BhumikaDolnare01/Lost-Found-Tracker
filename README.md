@@ -61,7 +61,6 @@ Lost & Found Tracker provides a centralized digital platform where students can:
 - User authentication and student login
 - Email notifications for item matches
 - AI image similarity matching
-- Admin dashboard for verification
 - QR code-based item claiming system
 - Mobile application support
 
